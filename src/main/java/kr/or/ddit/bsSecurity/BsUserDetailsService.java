@@ -1,0 +1,52 @@
+package kr.or.ddit.bsSecurity;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import kr.or.ddit.mapper.BsMapper;
+import kr.or.ddit.vo.BsuiVO;
+import lombok.extern.slf4j.Slf4j;
+
+//UserDetailsService : 스프링 시큐리티에서 제공해주고 있는 
+// 사용자 상세 정보를 갖고 있는 인터페이스
+@Slf4j
+@Service
+public class BsUserDetailsService implements UserDetailsService {
+	//DI(Dependency Injection) 의존성 주입
+	@Autowired
+	private BsMapper bsMapper;
+	
+	//username : 로그인 페이지에서 로그인 시도 시 입력된 아이디
+	@Override
+	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		//1) 사용자 정보를 검색을 해서
+		//username : 로그인 시 입력 받은 회원의 아이디
+		BsuiVO bsuiVO = new BsuiVO();
+		
+		bsuiVO.setLginId(username);
+		
+		bsuiVO =  this.bsMapper.detailMember(bsuiVO);
+		//memberVO : {memId:admin,memPass:java,mamName:개똥이...
+		//	,memberAuthVOList[memberAuthVO[memId:admin,auth:ROLE_MEMBER],memberAuthVO[memId:admin,auth:ROLE_ADMIN]]}
+		log.info("bsuiVO : " + bsuiVO);
+		//CustomUser : 사용자 정의 유저 정보. extends User를 상속받고 있음
+		//2) 스프링 시큐리티의 User 객체의 정보를 넣어줌=>스프링이 이제부터 해당 유저를 관리.
+		//User : 스프링 시큐리티에서 제공해주는 사용자 정보 클래스
+		return bsuiVO == null?null:new BsUser(bsuiVO);
+	}
+	
+}
+
+
+
+
+
+
+
+
+
+
+

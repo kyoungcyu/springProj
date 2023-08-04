@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+namespace : xml 파일이 여러개일 수 있음
+이를 구별하기 위한 식별 용도로 사용됨
+ -->
+<mapper namespace="kr.or.ddit.mapper.MemberMapper">
+	<!-- 자주 사용되는 구문을 따로 관리 -->
+	<sql id="where">
+		<!-- 전체 검색 -->
+		    <if test="keyword!=null and cond==''">
+	    	AND    (
+	            MEM_ID   LIKE '%' || #{keyword} || '%' OR
+	            MEM_NAME LIKE '%' || #{keyword} || '%' OR
+	            MEM_JOB  LIKE '%' || #{keyword} || '%' OR
+	            MEM_LIKE LIKE '%' || #{keyword} || '%'
+	        )
+	        </if>
+	        <!-- 조건 검색 -->
+	        <if test="cond!=null and !cond.equals('')">
+	        	<choose>
+	        		<when test="cond=='memId'">
+	        			AND MEM_ID LIKE '%' || #{keyword} || '%'
+	        		</when>
+	        		<when test="cond=='memName'">
+	        			AND MEM_NAME LIKE '%' || #{keyword} || '%'
+	        		</when>
+	        		<when test="cond=='memJob'">
+	        			AND MEM_JOB LIKE '%' || #{keyword} || '%'
+	        		</when>
+	        		<when test="cond=='memLike'">
+	        			AND MEM_Like LIKE '%' || #{keyword} || '%'
+	        		</when>
+	        	</choose>
+	        </if>
+	</sql>
+
+	<!-- 회원 정보 목록 
+	파라미터 : hashMap : {size=10,currentPage=1} 
+	파라미터 : hashMap : {size=10, currentPage=1, cond=memName, keyword=쁜이}
+	-->
+	<select id="list" parameterType="hashMap" resultType="memberVO">
+		WITH T AS(
+		    SELECT ROW_NUMBER() OVER(ORDER BY MEM_ID ASC) RNUM
+		         , MEM_ID, MEM_PASS, MEM_NAME, MEM_REGNO1, MEM_REGNO2
+		         , MEM_BIR, MEM_ZIP, MEM_ADD1, MEM_ADD2, MEM_HOMETEL
+		         , MEM_COMTEL, MEM_HP, MEM_MAIL, MEM_JOB, MEM_LIKE
+		         , MEM_MEMORIAL, MEM_MEMORIALDAY, MEM_MILEAGE, MEM_DELETE
+		    FROM   MEMBER
+		    WHERE  1 = 1
+		    <include refid="where"></include>
+		)
+		SELECT T.*
+		FROM   T
+		WHERE  T.RNUM BETWEEN (#{currentPage} * #{size}) - (#{size} - 1) 
+						  AND (#{currentPage} * #{size})
+<!-- 		시작행 : (현재페이지 * 한화면행수)-(한화면행수-1) -->
+<!-- 		종료행 : (현재페이지 * 한화면행수) -->
+	</select>
+	
+	<!-- 전체 글 수 구하기 
+	byte short int(기본) long
+	float double(기본)
+	파라미터 : hashMap : {size=10, currentPage=1, cond=memName, keyword=쁜이}
+	-->
+	<select id="getTotal" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM MEMBER
+		WHERE 1 = 1
+		<include refid="where"></include>
+	</select>
+	
+	<!-- 회원 상세 보기 -->
+	<select id="detail" parameterType="memberVO" resultType="memberVO">
+		SELECT MEM_ID, MEM_PASS, MEM_NAME, MEM_REGNO1, MEM_REGNO2
+		     , MEM_BIR, MEM_ZIP, MEM_ADD1, MEM_ADD2, MEM_HOMETEL
+		     , MEM_COMTEL, MEM_HP, MEM_MAIL, MEM_JOB, MEM_LIKE
+		     , MEM_MEMORIAL, MEM_MEMORIALDAY, MEM_MILEAGE, MEM_DELETE
+		FROM   MEMBER
+		WHERE  MEM_ID = #{memId}
+	</select>
+	
+	<!-- 회원 정보 변경 -->
+	<update id="updatePost" parameterType="memberVO">
+		UPDATE MEMBER
+		SET    MEM_NAME = #{memName},MEM_JOB = #{memJob},MEM_LIKE = #{memLike}
+		     , MEM_ZIP = #{memZip}, MEM_ADD1 = #{memAdd1}, MEM_ADD2 = #{memAdd2}
+		WHERE  MEM_ID = #{memId}
+	</update>
+	
+	<!-- 회원 정보 삭제 -->
+	<delete id="deletePost" parameterType="memberVO">
+		DELETE FROM MEMBER
+		WHERE  MEM_ID = #{memId}
+	</delete>
+	
+	<!-- 회원정보 입력 -->
+	<insert id="registerMember"  parameterType="memberVO" >
+		INSERT INTO  MEMBER(MEM_ID,MEM_PASS, MEM_NAME,  MEM_MAIL
+					, MEM_HP,MEM_MEMORIAL,MEM_BIR)
+		VALUES (#{memId},#{memPass}, #{memName}, #{memMail}
+			, #{memHp},#{memMemorial},#{memBir})		
+	</insert>
+			
+	<!-- 회원 주소 정보 입력 -->
+	<insert id="registerAddress" parameterType="addressVO">
+		INSERT INTO  ADDRESS(MEM_ID,POST_CODE,LOCATION,DET_LOCATION)
+		
+		VALUES(#{memId},#{postCode},#{location},#{detLocation})
+	</insert>	
+	
+	<update id="registerCard" parameterType="java.util.List">
+		<foreach collection="list" item="cardVO" separator=" "
+		open="INSERT ALL" close="SELECT *FROM DUAL">
+		INTO CARD(NO,MEM_ID,VALID_MONTH) VALUES(#{cardVO.no},#{cardVO.memId},#{cardVO.validMonth})
+		</foreach>
+	</update>	
+	
+	<!--  아이디 중복 체크 -->
+	<select id="checkMemId" parameterType="memberVO" resultType="int">
+		SELECT COUNT (*) FROM MEMBER WHERE MEM_ID =#{memId}
+	</select>
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

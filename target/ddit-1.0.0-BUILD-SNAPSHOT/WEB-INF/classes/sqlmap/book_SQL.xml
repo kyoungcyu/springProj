@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+namespace : xml 파일이 여러개일 수 있음
+이를 구별하기 위한 식별 용도로 사용됨
+ -->
+<mapper namespace="book">
+	<!-- insert : MyBatis에서 제공해주는 데이터 입력을 나타내는 태그 -->
+	<!-- bookVO(전) : BookVO [bookId=0, title=개똥이의 모험, category=소설, price=10000, insertDate=null] -->
+	<!-- bookVO(후) : BookVO [bookId=2, title=개똥이의 모험, category=소설, price=10000, insertDate=null] -->
+	<insert id="insert" parameterType="bookVO">
+		<!-- r o k : 락커(시끄러운 노래 부르는 가수) 
+		order="BEFORE" : insert문을 실행하기 전에 먼저 처리
+		-->
+		<selectKey resultType="int" order="BEFORE" keyProperty="bookId">
+			SELECT NVL(MAX(BOOK_ID),0)+1 FROM BOOK
+		</selectKey>
+	
+		INSERT INTO BOOK(BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE)
+		VALUES(
+		#{bookId},#{title},#{category},#{price},SYSDATE
+		)
+	</insert>
+	
+	<!-- 책 상세보기 
+	드루와 bookVO : BookVO [bookId=4, title=null, category=null, price=0, insertDate=null]
+	가즈아 bookVO : BookVO [bookId=4, title=더 글로리, category=드라마, price=12000, insertDate=2023-04-12]
+	 -->
+	<select id="detail" parameterType="bookVO" resultType="bookVO">
+		SELECT BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE
+		FROM   BOOK
+		WHERE  BOOK_ID = #{bookId}
+	</select>
+	
+	<!-- 책 변경하기. update 태그는 update 쿼리를 실행하기 위한 마이바티스 태그임 
+	드루와 bookVO : BookVO [bookId=4, title=더 글로리22, category=드라마22, price=12002, insertDate=null]
+	insert, update, delete는 resultType을 안씀(당연히 int이므로)
+	-->
+	<update id="updatePost" parameterType="bookVO">
+		UPDATE BOOK
+		SET    TITLE=#{title},CATEGORY=#{category}, PRICE=#{price},INSERT_DATE=SYSDATE
+		WHERE  BOOK_ID = #{bookId}
+	</update>
+	
+	<!-- p.90 
+	도서 삭제. delete 태그는 삭제 쿼리를 실행하기 위한 MyBatis 태그임.
+	resultType="int"이고 생략함
+	BookVO [bookId=4, title=null, category=null, price=0, insertDate=null]
+	 -->
+	<delete id="deletePost" parameterType="bookVO">
+		DELETE FROM BOOK
+		WHERE  BOOK_ID = #{bookId}
+	</delete>
+	
+	<!-- p.102 -->
+	<!-- 도서 목록 
+	/list?keyword=글로리
+	-->
+	<select id="list" parameterType="String" resultType="bookVO">
+		SELECT BOOK_ID, TITLE, CATEGORY, PRICE, INSERT_DATE
+		FROM   BOOK
+		WHERE  1 = 1
+		<if test="keyword!=null and keyword!=''">
+		AND  (TITLE LIKE    '%' || #{keyword} || '%'
+		      OR CATEGORY LIKE '%' || #{keyword} || '%')
+		</if>
+		ORDER BY INSERT_DATE DESC
+	</select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

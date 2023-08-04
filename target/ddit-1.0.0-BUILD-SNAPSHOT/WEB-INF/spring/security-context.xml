@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:tx="http://www.springframework.org/schema/tx" 
+   xmlns:aop="http://www.springframework.org/schema/aop" 
+   xmlns:security="http://www.springframework.org/schema/security" 
+   xmlns:context="http://www.springframework.org/schema/context" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+   xsi:schemaLocation="http://www.springframework.org/schema/tx 
+      http://www.springframework.org/schema/tx/spring-tx-4.1.xsd 
+      http://www.springframework.org/schema/aop 
+      http://www.springframework.org/schema/aop/spring-aop-4.1.xsd 
+      http://www.springframework.org/schema/security 
+      http://www.springframework.org/schema/security/spring-security.xsd 
+      http://www.springframework.org/schema/context 
+      http://www.springframework.org/schema/context/spring-context-4.1.xsd 
+      http://www.springframework.org/schema/beans 
+      https://www.springframework.org/schema/beans/spring-beans.xsd">
+      
+      <security:http>
+      	<security:intercept-url pattern="/board/list" access="permitAll"/>
+      	<security:intercept-url pattern="/board/register" access="hasRole('ROLE_MEMBER')"/> <!-- 회원만 허용 -->
+      	<security:intercept-url pattern="/notice/list" access="permitAll"/>
+      	<security:intercept-url pattern="/notice/register" access="hasRole('ROLE_ADMIN')"/> <!-- 관리자만 허용 -->
+      <!-- 로그인 시 시큐리티가 제공해주는 기본 폼 인증 기능을 사용 -->
+      <security:form-login/>
+      </security:http>
+      
+      <!-- authentication : 인증(로그인) -->
+      <security:authentication-manager>
+      </security:authentication-manager>
+</beans>
+
+
+
+
+

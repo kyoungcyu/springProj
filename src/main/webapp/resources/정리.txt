@@ -1,0 +1,39 @@
+1. 스프링 시큐리티에서  submit 할때
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags"%>
+ 1) <form 태그 사용시
+ 		<sec:csrfImput />
+ 	</form>
+ 	
+ 2) ajax 사용시 
+ 	beforeSend:function(xhr){
+ 		xhr.setRequestHeader("${_csrf.headerName}","${_csrf.token}");
+ 	},
+ 	success:function(result){
+ 	
+ 3) 파일 업로드 시
+ <form .. action ="요청URI?${_csrf.parameterName}=${_csrf.token}"
+ 		method="post" enctype= "multipart/form-data">
+ 		<sec:csrfInput/>
+ </form>
+ 
+ 2. 자동로그인
+  1) 로그인하면 특정 시간 동안 다시 로그인 할 필요가 없는 기능
+  2) 스프링 시큐리티는 데이터베이스를 사용하여 처리 . persistent_logins 테이블 .
+  3) security-context.xml 에서 remember-me 태그를 이용하여 구현3
+ 
+ 3. 스프링 시큐리티 표현식
+  1) hasRole("ROLE_MEMBER") : 해당 롤이 있으면 true 
+  2) hasAnyRole("ROLE_MEMBER","ROLE_ADMIN") : 여러 롤들 중에 하나라도 
+  	해당하는 롤이 있으면 true 
+  3) pricipal 
+  : 인증된 사용자의 사용자 정보(UserDetails 인터페이스를 구현한 클래스의 객체)
+  4) authentication
+  : 인증된 사용자의 인증 정보(Authentication 인터페이스를 구현한 클래스의 객체)
+  5) permitAll
+  : 모든 사용자에게 허용
+  6) denyAll
+  : 모든 사용자에게 거부
+  7) isAnonymous() : 익명의 사용자의 경우 (로그인을 하지 않은 경우도 해당)
+  8) isAuthenticated() : 인증된 사용자의 경우 true
+  9) isFullyAuthenticated() : Remember-me로 인증된 것이 아닌 일반적인 방법으로 인증된 사용자인 경우 true
+  
